@@ -424,6 +424,48 @@ const TripDetailPage = () => {
     { id: 'timeline', label: '📅 Timeline' },
   ];
 
+  let activitiesContent = null;
+  if (cities.length === 0) {
+    activitiesContent = (
+      <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>
+    );
+  } else if (activities.length === 0) {
+    activitiesContent = (
+      <EmptyState
+        icon="🎯"
+        title="No activities yet"
+        description="Plan what you'll do at each destination."
+        action={<button className="btn btn-primary" onClick={() => handleOpenAddActivity(cities[0]?._id || '')}>Add Activity</button>}
+      />
+    );
+  } else {
+    activitiesContent = cities.map((city) => {
+      const cityActs = getActivitiesForCity(city._id);
+      if (cityActs.length === 0) return null;
+      return (
+        <div key={city._id} className="section-card">
+          <div className="section-card-header">
+            <h3 className="section-card-title">📍 {city.cityName}</h3>
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={() => handleOpenAddActivity(city._id)}
+            >
+              + Activity
+            </button>
+          </div>
+          {cityActs.map((act) => (
+            <ActivityItem
+              key={act._id}
+              act={act}
+              onEdit={handleEditActivity}
+              onDelete={handleDeleteActivity}
+            />
+          ))}
+        </div>
+      );
+    });
+  }
+
   return (
     <>
       <div className="page-container">
@@ -540,42 +582,7 @@ const TripDetailPage = () => {
                 + Add Activity
               </button>
             </div>
-            {cities.length === 0 ? (
-              <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>
-            ) : activities.length === 0 ? (
-              <EmptyState
-                icon="🎯"
-                title="No activities yet"
-                description="Plan what you'll do at each destination."
-                action={<button className="btn btn-primary" onClick={() => handleOpenAddActivity(cities[0]?._id || '')}>Add Activity</button>}
-              />
-            ) : (
-              cities.map((city) => {
-                const cityActs = getActivitiesForCity(city._id);
-                if (cityActs.length === 0) return null;
-                return (
-                  <div key={city._id} className="section-card">
-                    <div className="section-card-header">
-                      <h3 className="section-card-title">📍 {city.cityName}</h3>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleOpenAddActivity(city._id)}
-                      >
-                        + Activity
-                      </button>
-                    </div>
-                    {cityActs.map((act) => (
-                      <ActivityItem
-                        key={act._id}
-                        act={act}
-                        onEdit={handleEditActivity}
-                        onDelete={handleDeleteActivity}
-                      />
-                    ))}
-                  </div>
-                );
-              })
-            )}
+            {activitiesContent}
           </div>
         )}
 
