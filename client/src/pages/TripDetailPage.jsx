@@ -33,12 +33,16 @@ const EditTripModal = ({ isOpen, onClose, trip, onUpdated }) => {
     if (new Date(form.startDate) > new Date(form.endDate)) { setError('Start date cannot be after end date.'); return; }
     setLoading(true);
     try {
-      const res = await tripAPI.update(trip._id, { ...form, budget: parseFloat(form.budget) || 0 });
+      const res = await tripAPI.update(trip._id, { ...form, budget: Number.parseFloat(form.budget) || 0 });
       onUpdated(res.data.trip);
       toast.success('Trip updated!');
       onClose();
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('Trip update error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,13 +51,13 @@ const EditTripModal = ({ isOpen, onClose, trip, onUpdated }) => {
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {error && <div className="alert alert-error">{error}</div>}
-        <div className="form-group"><label className="form-label">Trip Name *</label><input id="edit-trip-name" name="name" type="text" className="form-input" value={form.name} onChange={handleChange} /></div>
-        <div className="form-group"><label className="form-label">Description</label><textarea name="description" className="form-input" value={form.description} onChange={handleChange} rows={2} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="edit-trip-name">Trip Name *</label><input id="edit-trip-name" name="name" type="text" className="form-input" value={form.name} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="edit-trip-desc">Description</label><textarea id="edit-trip-desc" name="description" className="form-input" value={form.description} onChange={handleChange} rows={2} /></div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <div className="form-group"><label className="form-label">Start Date *</label><input name="startDate" type="date" className="form-input" value={form.startDate} onChange={handleChange} /></div>
-          <div className="form-group"><label className="form-label">End Date *</label><input name="endDate" type="date" className="form-input" value={form.endDate} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="edit-trip-start">Start Date *</label><input id="edit-trip-start" name="startDate" type="date" className="form-input" value={form.startDate} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="edit-trip-end">End Date *</label><input id="edit-trip-end" name="endDate" type="date" className="form-input" value={form.endDate} onChange={handleChange} /></div>
         </div>
-        <div className="form-group"><label className="form-label">Budget (USD)</label><input name="budget" type="number" min="0" step="0.01" className="form-input" value={form.budget} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="edit-trip-budget">Budget (USD)</label><input id="edit-trip-budget" name="budget" type="number" min="0" step="0.01" className="form-input" value={form.budget} onChange={handleChange} /></div>
       </form>
     </Modal>
   );
@@ -82,25 +86,33 @@ const CityModal = ({ isOpen, onClose, tripId, trip, city, onSaved }) => {
       let res;
       if (editing) res = await cityAPI.update(city._id, form);
       else res = await cityAPI.add({ tripId, ...form });
-      onSaved(editing ? res.data.city : res.data.city, editing);
+      onSaved(res.data.city, editing);
       toast.success(editing ? 'Destination updated!' : 'Destination added! 📍');
       onClose();
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('City save error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  let cityBtnText = 'Add Destination';
+  if (loading) cityBtnText = 'Saving...';
+  else if (editing) cityBtnText = 'Save Changes';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={editing ? '✏️ Edit Destination' : '📍 Add Destination'}
-      footer={<><button className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button><button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Saving...' : editing ? 'Save Changes' : 'Add Destination'}</button></>}
+      footer={<><button className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button><button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>{cityBtnText}</button></>}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {error && <div className="alert alert-error">{error}</div>}
-        <div className="form-group"><label className="form-label">City Name *</label><input id="city-name-input" name="cityName" type="text" className="form-input" placeholder="e.g. Paris, Tokyo, New York" value={form.cityName} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="city-name-input">City Name *</label><input id="city-name-input" name="cityName" type="text" className="form-input" placeholder="e.g. Paris, Tokyo, New York" value={form.cityName} onChange={handleChange} /></div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <div className="form-group"><label className="form-label">Arrival Date *</label><input name="arrivalDate" type="date" className="form-input" value={form.arrivalDate} onChange={handleChange} /></div>
-          <div className="form-group"><label className="form-label">Departure Date *</label><input name="departureDate" type="date" className="form-input" value={form.departureDate} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="city-arrival-date">Arrival Date *</label><input id="city-arrival-date" name="arrivalDate" type="date" className="form-input" value={form.arrivalDate} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="city-departure-date">Departure Date *</label><input id="city-departure-date" name="departureDate" type="date" className="form-input" value={form.departureDate} onChange={handleChange} /></div>
         </div>
-        <div className="form-group"><label className="form-label">Notes</label><textarea name="notes" className="form-input" placeholder="Any notes about this stop..." value={form.notes} onChange={handleChange} rows={2} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="city-notes">Notes</label><textarea id="city-notes" name="notes" className="form-input" placeholder="Any notes about this stop..." value={form.notes} onChange={handleChange} rows={2} /></div>
       </form>
     </Modal>
   );
@@ -123,41 +135,49 @@ const ActivityModal = ({ isOpen, onClose, tripId, cities, activity, defaultCityI
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.date || !form.cityId) { setError('Activity name, date, and destination are required.'); return; }
-    if (form.cost !== '' && parseFloat(form.cost) < 0) { setError('Cost must be a non-negative value.'); return; }
+    if (form.cost !== '' && Number.parseFloat(form.cost) < 0) { setError('Cost must be a non-negative value.'); return; }
     setLoading(true);
     try {
       let res;
-      const payload = { ...form, tripId, cost: form.cost !== '' ? parseFloat(form.cost) : 0 };
+      const payload = { ...form, tripId, cost: form.cost !== '' ? Number.parseFloat(form.cost) : 0 };
       if (editing) res = await activityAPI.update(activity._id, payload);
       else res = await activityAPI.create(payload);
       onSaved(res.data.activity, editing);
       toast.success(editing ? 'Activity updated!' : 'Activity added! 🎯');
       onClose();
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error('Activity save error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  let actBtnText = 'Add Activity';
+  if (loading) actBtnText = 'Saving...';
+  else if (editing) actBtnText = 'Save Changes';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={editing ? '✏️ Edit Activity' : '🎯 Add Activity'}
-      footer={<><button className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button><button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>{loading ? 'Saving...' : editing ? 'Save Changes' : 'Add Activity'}</button></>}
+      footer={<><button className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button><button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>{actBtnText}</button></>}
     >
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {error && <div className="alert alert-error">{error}</div>}
-        <div className="form-group"><label className="form-label">Destination *</label>
-          <select name="cityId" className="form-input" value={form.cityId} onChange={handleChange}>
+        <div className="form-group"><label className="form-label" htmlFor="activity-destination">Destination *</label>
+          <select id="activity-destination" name="cityId" className="form-input" value={form.cityId} onChange={handleChange}>
             <option value="">Select destination...</option>
             {cities.map((c) => <option key={c._id} value={c._id}>{c.cityName}</option>)}
           </select>
         </div>
-        <div className="form-group"><label className="form-label">Activity Name *</label><input id="activity-name-input" name="name" type="text" className="form-input" placeholder="e.g. Eiffel Tower Visit" value={form.name} onChange={handleChange} /></div>
-        <div className="form-group"><label className="form-label">Description</label><textarea name="description" className="form-input" placeholder="What will you do?" value={form.description} onChange={handleChange} rows={2} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="activity-name-input">Activity Name *</label><input id="activity-name-input" name="name" type="text" className="form-input" placeholder="e.g. Eiffel Tower Visit" value={form.name} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="activity-description">Description</label><textarea id="activity-description" name="description" className="form-input" placeholder="What will you do?" value={form.description} onChange={handleChange} rows={2} /></div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          <div className="form-group"><label className="form-label">Date *</label><input name="date" type="date" className="form-input" value={form.date} onChange={handleChange} /></div>
-          <div className="form-group"><label className="form-label">Time</label><input name="time" type="time" className="form-input" value={form.time} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="activity-date">Date *</label><input id="activity-date" name="date" type="date" className="form-input" value={form.date} onChange={handleChange} /></div>
+          <div className="form-group"><label className="form-label" htmlFor="activity-time">Time</label><input id="activity-time" name="time" type="time" className="form-input" value={form.time} onChange={handleChange} /></div>
         </div>
-        <div className="form-group"><label className="form-label">Location</label><input name="location" type="text" className="form-input" placeholder="Address or landmark" value={form.location} onChange={handleChange} /></div>
-        <div className="form-group"><label className="form-label">Estimated Cost (USD)</label><input name="cost" type="number" min="0" step="0.01" className="form-input" placeholder="0" value={form.cost} onChange={handleChange} /></div>
-        <div className="form-group"><label className="form-label">Notes</label><textarea name="notes" className="form-input" placeholder="Any additional notes" value={form.notes} onChange={handleChange} rows={2} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="activity-location">Location</label><input id="activity-location" name="location" type="text" className="form-input" placeholder="Address or landmark" value={form.location} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="activity-cost">Estimated Cost (USD)</label><input id="activity-cost" name="cost" type="number" min="0" step="0.01" className="form-input" placeholder="0" value={form.cost} onChange={handleChange} /></div>
+        <div className="form-group"><label className="form-label" htmlFor="activity-notes">Notes</label><textarea id="activity-notes" name="notes" className="form-input" placeholder="Any additional notes" value={form.notes} onChange={handleChange} rows={2} /></div>
       </form>
     </Modal>
   );
@@ -285,6 +305,7 @@ const TripDetailPage = () => {
         setCities(res.data.cities || []);
         setActivities(res.data.activities || []);
       } catch (err) {
+        console.error('Failed to load trip:', err);
         toast.error('Trip not found');
         navigate('/dashboard');
       } finally {
@@ -462,12 +483,14 @@ const TripDetailPage = () => {
                 + Add Activity
               </button>
             </div>
-            {cities.length === 0 ? (
-              <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>
-            ) : activities.length === 0 ? (
-              <EmptyState icon="🎯" title="No activities yet" description="Plan what you'll do at each destination." action={<button className="btn btn-primary" onClick={() => setActivityModalOpen(true)}>Add Activity</button>} />
-            ) : (
-              cities.map((city) => {
+            {(() => {
+              if (cities.length === 0) {
+                return <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>;
+              }
+              if (activities.length === 0) {
+                return <EmptyState icon="🎯" title="No activities yet" description="Plan what you'll do at each destination." action={<button className="btn btn-primary" onClick={() => setActivityModalOpen(true)}>Add Activity</button>} />;
+              }
+              return cities.map((city) => {
                 const cityActs = getActivitiesForCity(city._id);
                 if (cityActs.length === 0) return null;
                 return (
@@ -498,8 +521,8 @@ const TripDetailPage = () => {
                     ))}
                   </div>
                 );
-              })
-            )}
+              });
+            })()}
           </div>
         )}
 
@@ -524,19 +547,31 @@ const TripDetailPage = () => {
       <EditTripModal isOpen={editTripOpen} onClose={() => setEditTripOpen(false)} trip={trip} onUpdated={(t) => setTrip(t)} />
       <CityModal isOpen={cityModalOpen} onClose={() => { setCityModalOpen(false); setEditingCity(null); }} tripId={id} trip={trip} city={editingCity} onSaved={handleCitySaved} />
       <ActivityModal isOpen={activityModalOpen} onClose={() => { setActivityModalOpen(false); setEditingActivity(null); }} tripId={id} cities={cities} activity={editingActivity} defaultCityId={defaultCityId} onSaved={handleActivitySaved} />
-      <ConfirmDialog
-        isOpen={deleteConfirm.open}
-        onClose={() => setDeleteConfirm({ open: false, type: '', item: null })}
-        onConfirm={handleDeleteConfirm}
-        loading={deleting}
-        title={`Delete ${deleteConfirm.type === 'trip' ? 'Trip' : deleteConfirm.type === 'city' ? 'Destination' : 'Activity'}`}
-        message={
-          deleteConfirm.type === 'trip' ? `Delete "${deleteConfirm.item?.name}"? All destinations and activities will be permanently removed.`
-          : deleteConfirm.type === 'city' ? `Delete "${deleteConfirm.item?.cityName}"? All activities in this destination will also be removed.`
-          : `Delete "${deleteConfirm.item?.name}"?`
+      {(() => {
+        let deleteTitle = 'Delete Activity';
+        let deleteMessage = `Delete "${deleteConfirm.item?.name}"?`;
+        let deleteConfirmText = 'Delete Activity';
+        if (deleteConfirm.type === 'trip') {
+          deleteTitle = 'Delete Trip';
+          deleteMessage = `Delete "${deleteConfirm.item?.name}"? All destinations and activities will be permanently removed.`;
+          deleteConfirmText = 'Delete Trip';
+        } else if (deleteConfirm.type === 'city') {
+          deleteTitle = 'Delete Destination';
+          deleteMessage = `Delete "${deleteConfirm.item?.cityName}"? All activities in this destination will also be removed.`;
+          deleteConfirmText = 'Delete Destination';
         }
-        confirmText={`Delete ${deleteConfirm.type === 'trip' ? 'Trip' : deleteConfirm.type === 'city' ? 'Destination' : 'Activity'}`}
-      />
+        return (
+          <ConfirmDialog
+            isOpen={deleteConfirm.open}
+            onClose={() => setDeleteConfirm({ open: false, type: '', item: null })}
+            onConfirm={handleDeleteConfirm}
+            loading={deleting}
+            title={deleteTitle}
+            message={deleteMessage}
+            confirmText={deleteConfirmText}
+          />
+        );
+      })()}
     </>
   );
 };

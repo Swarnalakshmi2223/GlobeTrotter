@@ -19,7 +19,7 @@ const SignupPage = () => {
     const e = {};
     if (!form.name.trim()) e.name = 'Name is required';
     if (!form.email.trim()) e.email = 'Email is required';
-    else if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Enter a valid email';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
     if (!form.password) e.password = 'Password is required';
     else if (form.password.length < 6) e.password = 'Password must be at least 6 characters';
     return e;
@@ -116,6 +116,7 @@ const SignupPage = () => {
             {loading ? (
               <>
                 <span className="spinner spinner-sm" style={{ borderTopColor: 'white' }} />
+                {' '}
                 Creating account...
               </>
             ) : 'Create Account →'}

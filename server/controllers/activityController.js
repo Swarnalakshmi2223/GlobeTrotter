@@ -55,7 +55,7 @@ const createActivity = async (req, res, next) => {
     }
 
     const activityDate = new Date(date);
-    if (isNaN(activityDate)) {
+    if (Number.isNaN(activityDate.getTime())) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
     }
 

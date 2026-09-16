@@ -4,7 +4,12 @@ const BudgetBar = ({ budget }) => {
   const { total, spent, remaining, percentUsed, isOverBudget } = budget;
 
   const clampedPercent = Math.min(percentUsed || 0, 100);
-  const fillClass = isOverBudget ? 'over' : percentUsed >= 80 ? 'warning' : 'safe';
+  let fillClass = 'safe';
+  if (isOverBudget) {
+    fillClass = 'over';
+  } else if (percentUsed >= 80) {
+    fillClass = 'warning';
+  }
 
   const fmt = (n) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n || 0);

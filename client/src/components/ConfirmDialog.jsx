@@ -15,6 +15,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
             {loading ? (
               <>
                 <span className="spinner spinner-sm" style={{ borderTopColor: 'white' }} />
+                {' '}
                 Deleting...
               </>
             ) : confirmText}

@@ -93,6 +93,7 @@ const LoginPage = () => {
             {loading ? (
               <>
                 <span className="spinner spinner-sm" style={{ borderTopColor: 'white' }} />
+                {' '}
                 Signing in...
               </>
             ) : 'Sign In →'}

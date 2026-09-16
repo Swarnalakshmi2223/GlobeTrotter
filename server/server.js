@@ -16,6 +16,9 @@ connectDB();
 
 const app = express();
 
+// Disable X-Powered-By header to prevent technology/version disclosure (SQ-0063)
+app.disable('x-powered-by');
+
 // CORS – allow requests from React dev server (Vite uses 5173 or 5174)
 app.use(
   cors({

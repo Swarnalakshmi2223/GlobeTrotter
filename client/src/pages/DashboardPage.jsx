@@ -36,13 +36,14 @@ const CreateTripModal = ({ isOpen, onClose, onCreated }) => {
         description: form.description.trim(),
         startDate: form.startDate,
         endDate: form.endDate,
-        budget: form.budget ? parseFloat(form.budget) : 0,
+        budget: form.budget ? Number.parseFloat(form.budget) : 0,
       });
       toast.success('Trip created! ✈️');
       onCreated(res.data.trip);
       onClose();
       setForm({ name: '', description: '', startDate: '', endDate: '', budget: '' });
     } catch (err) {
+      console.error('Trip creation error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -55,7 +56,7 @@ const CreateTripModal = ({ isOpen, onClose, onCreated }) => {
         <>
           <button className="btn btn-ghost" onClick={onClose} disabled={loading}>Cancel</button>
           <button className="btn btn-primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? <><span className="spinner spinner-sm" style={{ borderTopColor: 'white' }} />Creating...</> : 'Create Trip'}
+            {loading ? <><span className="spinner spinner-sm" style={{ borderTopColor: 'white' }} />{' '}Creating...</> : 'Create Trip'}
           </button>
         </>
       }
@@ -63,25 +64,25 @@ const CreateTripModal = ({ isOpen, onClose, onCreated }) => {
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {error && <div className="alert alert-error">{error}</div>}
         <div className="form-group">
-          <label className="form-label">Trip Name *</label>
+          <label className="form-label" htmlFor="create-trip-name">Trip Name *</label>
           <input id="create-trip-name" name="name" type="text" className="form-input" placeholder="e.g. Europe Summer 2025" value={form.name} onChange={handleChange} />
         </div>
         <div className="form-group">
-          <label className="form-label">Description</label>
-          <textarea name="description" className="form-input" placeholder="What's this trip about?" value={form.description} onChange={handleChange} rows={2} />
+          <label className="form-label" htmlFor="create-trip-desc">Description</label>
+          <textarea id="create-trip-desc" name="description" className="form-input" placeholder="What's this trip about?" value={form.description} onChange={handleChange} rows={2} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div className="form-group">
-            <label className="form-label">Start Date *</label>
+            <label className="form-label" htmlFor="create-trip-start">Start Date *</label>
             <input id="create-trip-start" name="startDate" type="date" className="form-input" value={form.startDate} onChange={handleChange} />
           </div>
           <div className="form-group">
-            <label className="form-label">End Date *</label>
+            <label className="form-label" htmlFor="create-trip-end">End Date *</label>
             <input id="create-trip-end" name="endDate" type="date" className="form-input" value={form.endDate} onChange={handleChange} />
           </div>
         </div>
         <div className="form-group">
-          <label className="form-label">Total Budget (USD)</label>
+          <label className="form-label" htmlFor="create-trip-budget">Total Budget (USD)</label>
           <input id="create-trip-budget" name="budget" type="number" min="0" step="0.01" className="form-input" placeholder="e.g. 3000" value={form.budget} onChange={handleChange} />
         </div>
       </form>
@@ -103,6 +104,7 @@ const DashboardPage = () => {
         const res = await tripAPI.getAll();
         setTrips(res.data.trips || []);
       } catch (err) {
+        console.error('Failed to load trips:', err);
         toast.error('Failed to load trips');
       } finally {
         setLoading(false);

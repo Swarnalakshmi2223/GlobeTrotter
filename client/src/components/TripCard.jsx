@@ -27,9 +27,30 @@ const TripCard = ({ trip, onDeleted }) => {
     }
   };
 
+  // Keyboard handler for non-interactive card click (SQ-0009, SQ-0050)
+  const handleCardKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(`/trips/${trip._id}`);
+    }
+  };
+
+  // Keyboard handler for the actions container (SQ-0049)
+  const handleActionsKeyDown = (e) => {
+    e.stopPropagation();
+  };
+
   return (
     <>
-      <div className="trip-card animate-fade-in" onClick={() => navigate(`/trips/${trip._id}`)}>
+      {/* role=button + tabIndex + onKeyDown fixes SQ-0008, SQ-0009 */}
+      <div
+        className="trip-card animate-fade-in"
+        role="button"
+        tabIndex={0}
+        onClick={() => navigate(`/trips/${trip._id}`)}
+        onKeyDown={handleCardKeyDown}
+        aria-label={`View trip: ${trip.name}`}
+      >
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '6px' }}>
           <h3 className="trip-card-name">{trip.name}</h3>
           <span className={`badge ${status.cls}`}>{status.label}</span>
@@ -53,7 +74,13 @@ const TripCard = ({ trip, onDeleted }) => {
           Budget: <strong>{formatCurrency(trip.budget)}</strong>
         </div>
 
-        <div className="trip-card-actions" onClick={(e) => e.stopPropagation()}>
+        {/* role=presentation on actions container prevents click-on-non-interactive warning (SQ-0049, SQ-0050) */}
+        <div
+          className="trip-card-actions"
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={handleActionsKeyDown}
+        >
           <button
             className="btn btn-secondary btn-sm"
             style={{ flex: 1 }}
@@ -65,6 +92,7 @@ const TripCard = ({ trip, onDeleted }) => {
             className="btn btn-ghost btn-sm btn-icon"
             onClick={() => navigate(`/trips/${trip._id}?edit=true`)}
             title="Edit trip"
+            aria-label="Edit trip"
           >
             ✏️
           </button>
@@ -72,6 +100,7 @@ const TripCard = ({ trip, onDeleted }) => {
             className="btn btn-ghost btn-sm btn-icon"
             onClick={() => setConfirmOpen(true)}
             title="Delete trip"
+            aria-label="Delete trip"
           >
             🗑️
           </button>

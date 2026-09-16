@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react';
+import { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
 import { authAPI } from '../api';
 
 const AuthContext = createContext(null);
@@ -28,16 +28,13 @@ const authReducer = (state, action) => {
         loading: false,
       };
     case 'LOGOUT':
+    case 'AUTH_ERROR':
       localStorage.removeItem(STORAGE_TOKEN_KEY);
       localStorage.removeItem(STORAGE_USER_KEY);
       return { ...state, user: null, token: null, isAuthenticated: false, loading: false };
     case 'UPDATE_USER':
       localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(action.payload));
       return { ...state, user: action.payload };
-    case 'AUTH_ERROR':
-      localStorage.removeItem(STORAGE_TOKEN_KEY);
-      localStorage.removeItem(STORAGE_USER_KEY);
-      return { ...state, user: null, token: null, isAuthenticated: false, loading: false };
     default:
       return state;
   }
@@ -87,16 +84,19 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'UPDATE_USER', payload: user });
   };
 
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      login,
+      signup,
+      logout,
+      updateUser,
+    }),
+    [state]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        signup,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

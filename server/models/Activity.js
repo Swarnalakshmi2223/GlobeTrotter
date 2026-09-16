@@ -32,7 +32,7 @@ const activitySchema = new mongoose.Schema(
       type: String,
       trim: true,
       default: '',
-      match: [/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Time must be in HH:MM format'],
+      match: [/^([01]?\d|2[0-3]):[0-5]\d$/, 'Time must be in HH:MM format'],
     },
     location: {
       type: String,

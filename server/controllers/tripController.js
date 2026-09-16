@@ -28,7 +28,7 @@ const createTrip = async (req, res, next) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (isNaN(start) || isNaN(end)) {
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
     }
 

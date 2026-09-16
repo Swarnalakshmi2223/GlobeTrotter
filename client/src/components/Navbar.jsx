@@ -17,6 +17,7 @@ const Navbar = () => {
     <nav className="navbar">
       <Link to={isAuthenticated ? '/dashboard' : '/login'} className="navbar-logo">
         <span className="globe-icon">🌍</span>
+        {' '}
         GlobeTrotter
       </Link>
 

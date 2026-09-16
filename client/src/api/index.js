@@ -32,8 +32,10 @@ export const cityAPI = {
 
 // Activity APIs
 export const activityAPI = {
-  getByTrip: (tripId, cityId) =>
-    axiosInstance.get(`/api/activities?tripId=${tripId}${cityId ? `&cityId=${cityId}` : ''}`),
+  getByTrip: (tripId, cityId) => {
+    const query = cityId ? `?tripId=${tripId}&cityId=${cityId}` : `?tripId=${tripId}`;
+    return axiosInstance.get(`/api/activities${query}`);
+  },
   create: (data) => axiosInstance.post('/api/activities', data),
   update: (id, data) => axiosInstance.put(`/api/activities/${id}`, data),
   delete: (id) => axiosInstance.delete(`/api/activities/${id}`),
