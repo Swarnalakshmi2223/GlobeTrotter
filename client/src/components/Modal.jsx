@@ -18,26 +18,19 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
 
   if (!isOpen) return null;
 
-  // Handler for overlay click – close only when clicking the backdrop itself (SQ-0005, SQ-0006)
-  const handleOverlayKeyDown = (e) => {
-    if (e.key === 'Enter' || e.key === ' ') onClose();
-  };
-
   return (
-    <div
-      className="modal-overlay"
-      role="presentation"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      onKeyDown={handleOverlayKeyDown}
-    >
-      {/* aria-modal + role=dialog satisfies SQ-0046, SQ-0047 */}
-      <div
+    <div className="modal-overlay">
+      <button
+        type="button"
+        className="modal-backdrop"
+        onClick={onClose}
+        aria-label="Close modal backdrop"
+        tabIndex={-1}
+      />
+      <dialog
+        open
         className="modal animate-slide-up"
-        role="dialog"
-        aria-modal="true"
         aria-labelledby="modal-title"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
           <h3 id="modal-title" className="modal-title">{title}</h3>
@@ -49,7 +42,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
-      </div>
+      </dialog>
     </div>
   );
 };

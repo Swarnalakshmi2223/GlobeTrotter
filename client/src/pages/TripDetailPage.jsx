@@ -261,6 +261,42 @@ const BudgetView = ({ budget, loading }) => {
   );
 };
 
+// ===================== ACTIVITY ITEM =====================
+const ActivityItem = ({ act, onEdit, onDelete }) => (
+  <div className="activity-item">
+    <div className="activity-dot" />
+    <div style={{ flex: 1 }}>
+      <div className="activity-name">{act.name}</div>
+      <div className="activity-meta">
+        📅 {formatDate(act.date)}{act.time && ` · ⏰ ${act.time}`}
+        {act.location && <span>📌 {act.location}</span>}
+        {act.description && <span style={{ display: 'block', width: '100%', marginTop: '2px' }}>{act.description}</span>}
+      </div>
+    </div>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+      {act.cost > 0 && <span className="activity-cost">{formatCurrency(act.cost)}</span>}
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <button
+          className="btn btn-ghost btn-sm btn-icon"
+          onClick={() => onEdit(act)}
+          title="Edit activity"
+          aria-label="Edit activity"
+        >
+          ✏️
+        </button>
+        <button
+          className="btn btn-ghost btn-sm btn-icon"
+          onClick={() => onDelete(act)}
+          title="Delete activity"
+          aria-label="Delete activity"
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
 // ===================== MAIN TRIP DETAIL PAGE =====================
 const TripDetailPage = () => {
   const { id } = useParams();
@@ -284,6 +320,21 @@ const TripDetailPage = () => {
   const [defaultCityId, setDefaultCityId] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, type: '', item: null });
   const [deleting, setDeleting] = useState(false);
+
+  const handleEditActivity = useCallback((act) => {
+    setEditingActivity(act);
+    setActivityModalOpen(true);
+  }, []);
+
+  const handleDeleteActivity = useCallback((act) => {
+    setDeleteConfirm({ open: true, type: 'activity', item: act });
+  }, []);
+
+  const handleOpenAddActivity = useCallback((cityId) => {
+    setEditingActivity(null);
+    setDefaultCityId(cityId || '');
+    setActivityModalOpen(true);
+  }, []);
 
   const fetchBudget = useCallback(async () => {
     setBudgetLoading(true);
@@ -479,50 +530,52 @@ const TripDetailPage = () => {
         {activeTab === 'activities' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-              <button id="add-activity-btn" className="btn btn-primary" disabled={cities.length === 0} title={cities.length === 0 ? 'Add a destination first' : ''} onClick={() => { setEditingActivity(null); setDefaultCityId(cities[0]?._id || ''); setActivityModalOpen(true); }}>
+              <button
+                id="add-activity-btn"
+                className="btn btn-primary"
+                disabled={cities.length === 0}
+                title={cities.length === 0 ? 'Add a destination first' : ''}
+                onClick={() => handleOpenAddActivity(cities[0]?._id || '')}
+              >
                 + Add Activity
               </button>
             </div>
-            {(() => {
-              if (cities.length === 0) {
-                return <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>;
-              }
-              if (activities.length === 0) {
-                return <EmptyState icon="🎯" title="No activities yet" description="Plan what you'll do at each destination." action={<button className="btn btn-primary" onClick={() => setActivityModalOpen(true)}>Add Activity</button>} />;
-              }
-              return cities.map((city) => {
+            {cities.length === 0 ? (
+              <div className="alert alert-warning">⚠️ Add a destination first before adding activities.</div>
+            ) : activities.length === 0 ? (
+              <EmptyState
+                icon="🎯"
+                title="No activities yet"
+                description="Plan what you'll do at each destination."
+                action={<button className="btn btn-primary" onClick={() => handleOpenAddActivity(cities[0]?._id || '')}>Add Activity</button>}
+              />
+            ) : (
+              cities.map((city) => {
                 const cityActs = getActivitiesForCity(city._id);
                 if (cityActs.length === 0) return null;
                 return (
                   <div key={city._id} className="section-card">
                     <div className="section-card-header">
                       <h3 className="section-card-title">📍 {city.cityName}</h3>
-                      <button className="btn btn-secondary btn-sm" onClick={() => { setEditingActivity(null); setDefaultCityId(city._id); setActivityModalOpen(true); }}>+ Activity</button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => handleOpenAddActivity(city._id)}
+                      >
+                        + Activity
+                      </button>
                     </div>
                     {cityActs.map((act) => (
-                      <div key={act._id} className="activity-item">
-                        <div className="activity-dot" />
-                        <div style={{ flex: 1 }}>
-                          <div className="activity-name">{act.name}</div>
-                          <div className="activity-meta">
-                            📅 {formatDate(act.date)}{act.time && ` · ⏰ ${act.time}`}
-                            {act.location && <span>📌 {act.location}</span>}
-                            {act.description && <span style={{ display: 'block', width: '100%', marginTop: '2px' }}>{act.description}</span>}
-                          </div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-                          {act.cost > 0 && <span className="activity-cost">{formatCurrency(act.cost)}</span>}
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <button className="btn btn-ghost btn-sm btn-icon" onClick={() => { setEditingActivity(act); setActivityModalOpen(true); }}>✏️</button>
-                            <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setDeleteConfirm({ open: true, type: 'activity', item: act })}>🗑️</button>
-                          </div>
-                        </div>
-                      </div>
+                      <ActivityItem
+                        key={act._id}
+                        act={act}
+                        onEdit={handleEditActivity}
+                        onDelete={handleDeleteActivity}
+                      />
                     ))}
                   </div>
                 );
-              });
-            })()}
+              })
+            )}
           </div>
         )}
 
