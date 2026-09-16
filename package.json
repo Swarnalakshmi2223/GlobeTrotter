@@ -1,0 +1,13 @@
+{
+  "name": "globetrotter",
+  "version": "1.0.0",
+  "description": "GlobeTrotter – MERN Travel Planning Application",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "start cmd /k \"cd server && npm run dev\" && start cmd /k \"cd client && npm run dev\""
+  },
+  "keywords": ["travel", "mern", "planning"],
+  "author": "",
+  "license": "ISC"
+}
