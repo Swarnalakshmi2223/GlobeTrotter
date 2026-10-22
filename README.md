@@ -4,9 +4,22 @@
 [![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
 [![Node.js](https://img.shields.io/badge/Node.js-Express-68a063.svg)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248.svg)](https://www.mongodb.com/atlas)
+[![Deployed on Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7.svg)](https://globetrotter-1-kn9h.onrender.com)
 [![License: ISC](https://img.shields.io/badge/License-ISC-yellow.svg)](https://opensource.org/licenses/ISC)
 
 **GlobeTrotter** is a full-stack web application designed for travelers to plan, organize, manage, and track complete multi-city travel itineraries and budgets in one central place.
+
+## 🔗 Live Demo
+
+**👉 [https://globetrotter-1-kn9h.onrender.com](https://globetrotter-1-kn9h.onrender.com)**
+
+> ⏳ **Note:** The backend runs on Render's free tier, so it goes to sleep after about 15 minutes of inactivity. The first request (signup/login) may take 30–60 seconds while the server wakes up.
+
+| Service | URL |
+| :--- | :--- |
+| Frontend (Static Site) | https://globetrotter-1-kn9h.onrender.com |
+| Backend API (Web Service) | https://globetrotter-cao5.onrender.com |
+| Health Check | https://globetrotter-cao5.onrender.com/api/health |
 
 ---
 
@@ -53,7 +66,7 @@
 ### Frontend
 - **Framework**: [React 19](https://react.dev/) with [Vite](https://vitejs.dev/)
 - **Routing**: [React Router v7](https://reactrouter.com/)
-- **Styling**: Vanilla CSS (Custom design tokens, glassmorphism, responsive grid/flexbox)
+- **Styling**: Tailwind CSS plus custom CSS (design tokens, glassmorphism, responsive grid/flexbox)
 - **HTTP Client**: [Axios](https://axios-http.com/)
 - **Date Handling**: [date-fns](https://date-fns.org/)
 - **Notifications**: [React Hot Toast](https://react-hot-toast.com/)
@@ -64,6 +77,11 @@
 - **Database**: [MongoDB Atlas](https://www.mongodb.com/atlas) (Cloud DB) with [Mongoose ODM](https://mongoosejs.com/)
 - **Authentication**: `jsonwebtoken` & `bcryptjs`
 - **Cross-Origin**: `cors`
+
+### Hosting
+- **Frontend**: Render Static Site
+- **Backend**: Render Web Service
+- **Database**: MongoDB Atlas
 
 ---
 
@@ -154,7 +172,7 @@ Follow these steps to set up GlobeTrotter locally on your machine.
 
 ### 2. Clone the Repository
 ```bash
-git clone https://github.com/<your-username>/GlobeTrotter.git
+git clone https://github.com/Swarnalakshmi2223/GlobeTrotter.git
 cd GlobeTrotter
 ```
 
@@ -186,6 +204,7 @@ MONGO_URI=your_mongodb_connection_string_here
 JWT_SECRET=your_secret_jwt_key_here
 JWT_EXPIRES_IN=7d
 NODE_ENV=development
+CLIENT_URL=http://localhost:5173
 ```
 
 > ⚠️ **Important:** Never commit your `.env` file to GitHub or public repositories. It is included in `.gitignore` by default.
@@ -217,10 +236,63 @@ npm run dev
 
 ---
 
+## ☁️ Deployment (Render + MongoDB Atlas)
+
+The app is deployed as two separate Render services plus a MongoDB Atlas database.
+
+### 1. Database – MongoDB Atlas
+1. Create a free cluster and a database user.
+2. Under **Network Access**, allow `0.0.0.0/0` (Render's outbound IPs change).
+3. Copy the connection string and use it as `MONGO_URI`.
+
+### 2. Backend – Render Web Service
+| Setting | Value |
+| :--- | :--- |
+| Root Directory | `server` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+
+**Environment variables:**
+
+| Key | Value |
+| :--- | :--- |
+| `MONGO_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | A long random secret string |
+| `JWT_EXPIRES_IN` | `7d` |
+| `NODE_ENV` | `production` |
+| `CLIENT_URL` | `https://globetrotter-1-kn9h.onrender.com` (no trailing slash) |
+
+### 3. Frontend – Render Static Site
+| Setting | Value |
+| :--- | :--- |
+| Root Directory | `client` |
+| Build Command | `npm install && npm run build` |
+| Publish Directory | `dist` |
+
+**Environment variable:**
+
+| Key | Value |
+| :--- | :--- |
+| `VITE_API_URL` | `https://globetrotter-cao5.onrender.com` (no trailing slash) |
+
+> Use the same variable name your Axios client in `client/src/api/` reads. Vite bakes environment variables in at build time, so trigger a new build after changing them.
+
+**Rewrite rule** (needed for React Router so refreshing on `/signup`, `/dashboard`, etc. doesn't 404):
+
+| Source | Destination | Action |
+| :--- | :--- | :--- |
+| `/*` | `/index.html` | Rewrite |
+
+### 4. CORS
+The backend only accepts requests from `localhost` (development) and the origins listed in `server.js` / `CLIENT_URL`. If you deploy the frontend to a new URL, add it there and redeploy the backend.
+
+---
+
 ## 🛡️ Security Best Practices
 - **No Hardcoded Secrets**: Secrets and database credentials are read exclusively from environment variables.
 - **Data Validation & Sanitization**: Validates all client inputs before database insertion.
 - **Authorization Verification**: Middleware guarantees users can only view, edit, or delete their own trips and activities.
+- **Restricted CORS**: Only the deployed frontend and localhost (dev) are allowed origins.
 
 ---
 
