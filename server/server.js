@@ -19,12 +19,22 @@ const app = express();
 // Disable X-Powered-By header to prevent technology/version disclosure (SQ-0063)
 app.disable('x-powered-by');
 
-// CORS – allow requests from React dev server (Vite uses 5173 or 5174)
+
+// CORS – allow local dev and the deployed frontend
+const allowedOrigins = [
+  'https://globetrotter-1-kn9h.onrender.com',
+  process.env.CLIENT_URL, // optional, set on Render if you want
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow any localhost origin (for dev) or no origin (Postman)
-      if (!origin || origin.startsWith('http://localhost')) {
+      // Allow no origin (Postman), any localhost (dev), or listed origins
+      if (
+        !origin ||
+        origin.startsWith('http://localhost') ||
+        allowedOrigins.includes(origin)
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -33,7 +43,6 @@ app.use(
     credentials: true,
   })
 );
-
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
